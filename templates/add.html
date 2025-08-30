@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Post - My Flask Blog</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Add New Blog Post</h1>
+    
+    <!-- Show error if validation failed -->
+    {% if error %}
+    <div style="color: red; margin-bottom: 10px;">
+        Error: {{ error }}
+    </div>
+    {% endif %}
+    
+    <!-- Form that sends POST request to /add -->
+    <form action="{{ url_for('add') }}" method="POST">
+        <div style="margin-bottom: 10px;">
+            <label for="author">Author:</label><br>
+            <input type="text" id="author" name="author" 
+                   style="width: 300px;" required>
+        </div>
+        
+        <div style="margin-bottom: 10px;">
+            <label for="title">Title:</label><br>
+            <input type="text" id="title" name="title" 
+                   style="width: 300px;" required>
+        </div>
+        
+        <div style="margin-bottom: 10px;">
+            <label for="content">Content:</label><br>
+            <textarea id="content" name="content" 
+                      rows="10" cols="50" required></textarea>
+        </div>
+        
+        <div>
+            <input type="submit" value="Add Post">
+            <a href="{{ url_for('index') }}">Cancel</a>
+        </div>
+    </form>
+</body>
+</html>
