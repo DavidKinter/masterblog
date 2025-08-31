@@ -29,21 +29,17 @@ def load_blog_data() -> dict:
     Returns default structure if file does not exist or is corrupted.
     """
     # Checks if data file exists
-    if not os.path.exists(BLOG_DATA_FILE):
-        # No file yet, returns default structure
+    if not os.path.exists(BLOG_DATA_FILE):  # Returns default structure
         return DEFAULT_BLOG_STRUCTURE.copy()  # Prevents accidental override
 
-    # Tries to read the file
-    try:
+    try:  # Tries to read the file
         with open(BLOG_DATA_FILE, "r", encoding="utf-8") as file:
             data = json.load(file)
         return data
-    except json.JSONDecodeError:
-        # File exists but is corrupted
+    except json.JSONDecodeError:  # File exists but is corrupted
         print("Warning: Blog data file is corrupted. Starting fresh.")
         return DEFAULT_BLOG_STRUCTURE.copy()
-    except IOError as e:
-        # Other file reading errors
+    except IOError as e:  # Other file reading errors
         print(f"Error reading file: {e}")
         return DEFAULT_BLOG_STRUCTURE.copy()
 
@@ -64,7 +60,7 @@ def save_blog_data(blog_data: dict) -> None:
 def get_next_uid(blog_data: dict) -> int:
     """
     Generates the next unique ID for a blog post.
-    Updates andar returns the max_uid from blog data.
+    Updates and returns the max_uid from blog data.
     """
     # Updates the max_uid
     blog_data["max_uid"] += 1
@@ -104,11 +100,9 @@ def delete_post_from_list(blog_posts: list, post_uid: int) -> bool:
     Removes a post from the blog posts list.
     Returns True if deleted, False if not found.
     """
-    # Finds the post
-    post_to_delete = find_post_by_uid(blog_posts, post_uid)
+    post_to_delete = find_post_by_uid(blog_posts, post_uid)  # Finds the post
     if post_to_delete:
-        # Removes it from the list
-        blog_posts.remove(post_to_delete)
+        blog_posts.remove(post_to_delete)  # Removes post from list
         return True
     return False
 
@@ -138,9 +132,7 @@ def validate_blog_data(author: str, title: str, content: str) -> str:
         return "Post title is required"
     if not content:
         return "Post content is required"
-
-    # All validations passed
-    return ""
+    return ""  # All validations passed
 
 
 # ========== INITIALIZATION FUNCTIONS ==========
@@ -150,8 +142,7 @@ def initialize_sample_data() -> None:
     Creates sample blog posts if the data file does not exist.
     """
     if not os.path.exists(BLOG_DATA_FILE):
-        # Creates sample data structure with zero-based indexing
-        sample_data = {
+        sample_data = {  # Creates sample data structure with 0-based indexing
             "max_uid": 1,
             "posts":   [
                 {
@@ -180,12 +171,13 @@ def index():
     Displays all blog posts on the home page.
     This handles GET requests to the root URL.
     """
-    # Step 1: Loads blog data from JSON file
-    blog_data = load_blog_data()
-
-    # Step 2: Sends posts to the template for display
+    blog_data = load_blog_data()  # Loads blog data from JSON file
+    # Sends posts to the template for display
     # The template will receive a variable called "posts"
-    return render_template("index.html", posts=blog_data["posts"])
+    return render_template(
+        "index.html",
+        posts=blog_data["posts"]
+        )
 
 
 @app.route("/add", methods=["GET", "POST"])
@@ -195,37 +187,22 @@ def add():
     GET: Shows the form for creating a post.
     POST: Processes the submitted form data.
     """
-    if request.method == "POST":
-        # User submitted the form
-
-        # Step 1: Extracts data from form
-        author, title, content = extract_form_data()
-
-        # Step 2: Validates the data
+    if request.method == "POST":  # User submitted the form
+        author, title, content = extract_form_data()  # Extracts data from form
+        # Data validation
         error_message = validate_blog_data(author, title, content)
-        if error_message:
-            # Validation failed, shows form again with error
+        if error_message:  # If validation fails, shows form again with error
             return render_template(
                 "add.html",
                 error=error_message
                 )
-
-        # Step 3: Loads existing blog data
-        blog_data = load_blog_data()
-
-        # Step 4: Creates new post with unique ID
-        post_uid = get_next_uid(blog_data)
+        blog_data = load_blog_data()  # Loads existing blog data
+        post_uid = get_next_uid(blog_data)  # Creates new post with unique ID
         new_post = create_blog_post(author, title, content, post_uid)
-
-        # Step 5: Adds to list and saves
-        blog_data["posts"].append(new_post)
+        blog_data["posts"].append(new_post)  # Adds to list and saves
         save_blog_data(blog_data)
-
-        # Step 6: Redirects to home page to see the new post
-        return redirect(url_for("index"))
-
-    # GET request - shows the empty form
-    return render_template("add.html")
+        return redirect(url_for("index"))  # Redirects to new post on home page
+    return render_template("add.html")  # GET request - shows the empty form
 
 
 @app.route("/delete/<int:post_uid>")
@@ -235,21 +212,50 @@ def delete(post_uid: int):
     The <int:post_uid> captures a number from the URL.
     Example: /delete/5 will call delete(5)
     """
-    # Step 1: Loads existing blog data
-    blog_data = load_blog_data()
-
-    # Step 2: Tries to delete the post
+    blog_data = load_blog_data()  # Loads existing blog data
+    # Tries deleting post
     was_deleted = delete_post_from_list(blog_data["posts"], post_uid)
-
-    # Step 3: Saves the updated data (max_uid remains unchanged)
-    if was_deleted:
+    if was_deleted:  # Saves the updated data (max_uid remains unchanged)
         save_blog_data(blog_data)
         print(f"Post {post_uid} deleted successfully")
     else:
         print(f"Post {post_uid} not found")
+    return redirect(url_for("index"))  # Return to home page
 
-    # Step 4: Always goes back to home page
-    return redirect(url_for("index"))
+
+@app.route("/update/<int:post_uid>", methods=["GET", "POST"])
+def update(post_uid: int):
+    """
+    Handles updating existing blog posts.
+    GET: Shows the form with current post data.
+    POST: Processes the updated data.
+    """
+    blog_data = load_blog_data()  # Load blog data and find the post
+    post = find_post_by_uid(blog_data["posts"], post_uid)
+
+    if post is None:  # Check if post exists
+        return "Post not found", 404  # Post not found
+
+    if request.method == "POST":  # User submitted  update form
+        author, title, content = extract_form_data()  # Extract updated data
+        # Data validation
+        error_message = validate_blog_data(author, title, content)
+        if error_message:  # If validation fails, shows form again with error
+            return render_template(
+                "update.html",
+                post=post,
+                error=error_message
+                )
+        # Updates post in data structure
+        post["author"] = author
+        post["title"] = title
+        post["content"] = content
+        # Saves updated data
+        save_blog_data(blog_data)
+        # Redirect to home page
+        return redirect(url_for("index"))
+    # GET request - show the form with current data
+    return render_template("update.html", post=post)
 
 
 # ========== MAIN EXECUTION ==========

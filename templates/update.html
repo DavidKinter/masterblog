@@ -3,42 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add New Post - My Flask Blog</title>
+    <title>Update Post - My Flask Blog</title>
     <link rel="stylesheet"
           href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<h1>Add New Blog Post</h1>
-
+<h1>Update Blog Post</h1>
+    
 <!-- Show error if validation failed -->
 {% if error %}
 <div style="color: red; margin-bottom: 10px;">
     Error: {{ error }}
 </div>
 {% endif %}
-    
-<!-- Form that sends POST request to /add -->
-<form action="{{ url_for('add') }}" method="POST">
+
+<!-- Form that sends POST request to the same update URL -->
+<form action="{{ url_for('update', post_uid=post.uid) }}" method="POST">
     <div style="margin-bottom: 10px;">
         <label for="author">Author:</label><br>
         <input type="text" id="author" name="author"
+               value="{{ post.author }}"
                style="width: 300px;" required>
     </div>
 
     <div style="margin-bottom: 10px;">
         <label for="title">Title:</label><br>
         <input type="text" id="title" name="title"
+               value="{{ post.title }}"
                style="width: 300px;" required>
     </div>
 
     <div style="margin-bottom: 10px;">
         <label for="content">Content:</label><br>
         <textarea id="content" name="content"
-                  rows="10" cols="50" required></textarea>
+                  rows="10" cols="50" required>{{ post.content }}</textarea>
     </div>
 
     <div>
-        <input type="submit" value="Add Post">
+        <input type="submit" value="Update Post">
         <a href="{{ url_for('index') }}">Cancel</a>
     </div>
 </form>

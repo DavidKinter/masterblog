@@ -4,34 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Flask Blog</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Welcome to My Flask Blog!</h1>
-    
-    <!-- Link to add new posts -->
-    <p><a href="{{ url_for('add') }}">Add New Post</a></p>
-    
-    <!-- Show each blog post -->
-    {% for post in posts %}
-    <div class="post">
-        <h2>{{ post.title }}</h2>
-        <p><em>Written by {{ post.author }}</em></p>
-        <p>{{ post.content }}</p>
-        
-        <!-- Delete link for this post -->
-        <a href="{{ url_for('delete', post_uid=post.uid) }}" 
-           onclick="return confirm('Are you sure you want to delete this post?')">
-            Delete
-        </a>
-    </div>
-    {% endfor %}
-    
-    <!-- Message when no posts exist -->
-    {% if not posts %}
-    <div class="post">
-        <p>No blog posts yet. <a href="{{ url_for('add') }}">Create your first post!</a></p>
-    </div>
-    {% endif %}
+<h1>Welcome to My Flask Blog!</h1>
+
+<!-- Link to add new posts -->
+<p><a href="{{ url_for('add') }}">Add New Post</a></p>
+
+<!-- Show each blog post -->
+{% for post in posts %}
+<div class="post">
+    <h2>{{ post.title }}</h2>
+    <p><em>Written by {{ post.author }}</em></p>
+    <p>{{ post.content }}</p>
+
+    <!-- Update and Delete links -->
+    <a href="{{ url_for('update', post_uid=post.uid) }}">Update</a>
+    |
+    <a href="{{ url_for('delete', post_uid=post.uid) }}"
+       onclick="return confirm('Are you sure you want to delete this post?')">
+        Delete
+    </a>
+</div>
+{% endfor %}
+
+<!-- Message when no posts exist -->
+{% if not posts %}
+<div class="post">
+    <p>No blog posts yet. <a href="{{ url_for('add') }}">Create your first
+        post!</a></p>
+</div>
+{% endif %}
 </body>
 </html>
